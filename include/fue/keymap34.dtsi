@@ -1,0 +1,163 @@
+/*
+ * fue/keymap34.dtsi
+ * jisaku_1(40キー) / aerogu34(34キー) 共通キーマップ定義
+ *
+ * ★キーマップを変えるときはこのファイルだけを編集する★
+ * 変更をmainへpush後、各キーボードのリポジトリでGitHub Actionsを実行
+ * (Run workflow)してビルドし直すと両機に反映される。
+ *
+ * 共通論理レイアウト(キー位置0〜33):
+ *   0- 9: 上段10キー / 10-19: 中段10キー / 20-29: 下段10キー
+ *  30-33: 親指4キー(SPACE / GRAVE / BACKSPACE / ENTER)
+ * jisaku_1は最下段外側3キー×2を&noneで埋めて同一レイアウトにする。
+ */
+
+#ifndef FUE_KEYMAP34_DTSI
+#define FUE_KEYMAP34_DTSI
+
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/pointing.h>
+
+// ===== JIS配列用キーコード定義(OS側が日本語配列設定の場合に正しい記号を出す) =====
+#define JP_DQUOTE     AT                // "
+#define JP_AMPERSAND  CARET             // &
+#define JP_QUOTE      AMPERSAND         // '
+#define JP_EQUAL      UNDER             // =
+#define JP_CARET      EQUAL             // ^
+#define JP_YEN        INT3              // ¥
+#define JP_PLUS       COLON             // +
+#define JP_TILDE      PLUS              // ~
+#define JP_PIPE       LS(INT3)          // |
+#define JP_AT         LEFT_BRACKET      // @
+#define JP_COLON      SINGLE_QUOTE      // :
+#define JP_ASTERISK   DOUBLE_QUOTES     // *
+#define JP_BACKQUOTE  LEFT_BRACE        // `
+#define JP_UNDERSCORE LS(INT1)          // _
+#define JP_LBRACKET   RIGHT_BRACKET     // [
+#define JP_RBRACKET   BACKSLASH         // ]
+#define JP_LPAREN     ASTERISK          // (
+#define JP_RPAREN     LEFT_PARENTHESIS  // )
+#define JP_LBRACE     RIGHT_BRACE       // {
+#define JP_RBRACE     PIPE              // }
+#define JP_KANA       LANGUAGE_1        // かな
+#define JP_EISU       LANGUAGE_2        // 英数
+#define JP_HANZEN     GRAVE             // 半角/全角
+
+// ===== ホールドタップ誤爆対策 =====
+// balanced: 別キーが押して離されるまで完了したら長押し判定
+// require-prior-idle-ms: 直前の打鍵から125ms以内は問答無用で単押し判定(ローリング誤爆根絶)
+// quick-tap-ms: タップ直後150ms以内の再押下は単押し(キーリピート有効化)
+&mt {
+    flavor = "balanced";
+    tapping-term-ms = <200>;
+    quick-tap-ms = <150>;
+    require-prior-idle-ms = <125>;
+};
+
+&lt {
+    flavor = "balanced";
+    tapping-term-ms = <200>;
+    quick-tap-ms = <150>;
+    require-prior-idle-ms = <125>;
+};
+
+// ===== コンボ定義(両機共通: キー位置0〜29は同一) =====
+/ {
+    combos {
+        compatible = "zmk,combos";
+
+        tab {
+            bindings = <&kp TAB>;
+            key-positions = <11 12>;
+            layers = <0>;
+        };
+
+        stab {
+            bindings = <&kp LS(TAB)>;
+            key-positions = <12 13>;
+        };
+
+        // ----- Scrollレイヤー限定のシステム操作(誤爆防止) -----
+        // BT_CLR: Q+T / Bootloader: W+E+R / sys_reset: X+C+V / soft_off: U+I+O
+        btreset {
+            bindings = <&bt BT_CLR>;
+            key-positions = <0 4>;
+            layers = <3>;
+        };
+
+        boot {
+            bindings = <&bootloader>;
+            key-positions = <1 2 3>;
+            layers = <3>;
+        };
+
+        sysreset {
+            bindings = <&sys_reset>;
+            key-positions = <21 22 23>;
+            layers = <3>;
+        };
+
+        softoff {
+            bindings = <&soft_off>;
+            key-positions = <6 7 8>;
+            layers = <3>;
+        };
+
+        lwin {
+            bindings = <&kp LEFT_WIN>;
+            key-positions = <20 21>;
+        };
+
+        lalt {
+            bindings = <&kp LEFT_ALT>;
+            key-positions = <20 22>;
+        };
+
+        rwin {
+            bindings = <&kp RIGHT_WIN>;
+            key-positions = <29 28>;
+        };
+
+        ralt {
+            bindings = <&kp RIGHT_ALT>;
+            key-positions = <29 27>;
+        };
+    };
+};
+
+// ===== レイヤー定義マクロ =====
+// 各行10キー(左5+右5)、THUMBSは親指4キー(左2+右2)
+
+// --- Layer 0: Default ---
+#define FUE_L0_ROW1 &kp Q &kp W &kp E &kp R &kp T    &kp Y &kp U &kp I &kp O &kp P
+#define FUE_L0_ROW2 &mt LCTRL A &kp S &lt 3 D &kp F &kp G    &kp H &kp J &lt 3 K &kp L &mt RCTRL MINUS
+#define FUE_L0_ROW3 &mt LSHIFT Z &mt LGUI X &mt LALT C &kp V &kp B    &kp N &kp M &mt RALT COMMA &mt RGUI DOT &mt RSHIFT SLASH
+#define FUE_L0_THUMBS &lt 1 SPACE &lt 3 GRAVE    &kp BACKSPACE &lt 2 ENTER
+
+// --- Layer 1: Function ---
+#define FUE_L1_ROW1 &kp F1 &kp F2 &kp F3 &kp F4 &kp F5    &kp F6 &kp F7 &kp F8 &kp F9 &kp F10
+#define FUE_L1_ROW2 &kp JP_COLON &kp EXCLAMATION &kp SLASH &kp JP_LPAREN &kp JP_LBRACKET    &kp JP_UNDERSCORE &mkp MB1 &kp UP &mkp MB2 &kp F11
+#define FUE_L1_ROW3 &kp SEMICOLON &kp QUESTION &kp JP_YEN &kp JP_RPAREN &kp JP_RBRACKET    &kp JP_AT &kp LEFT &kp DOWN &kp RIGHT &kp F12
+#define FUE_L1_THUMBS &trans &trans    &trans &trans
+
+// --- Layer 2: Number ---
+#define FUE_L2_ROW1 &kp TAB &kp N7 &kp N8 &kp N9 &kp MINUS    &kp RIGHT_BRACKET &trans &mkp MB3 &trans &kp ESC
+#define FUE_L2_ROW2 &kp DOT &kp N4 &kp N5 &kp N6 &kp JP_PLUS    &kp RPAR &mkp MB1 &kp UP &mkp MB2 &kp COLON
+#define FUE_L2_ROW3 &kp N0 &kp N1 &kp N2 &kp N3 &kp EQUAL    &kp RIGHT_BRACE &kp LEFT &kp DOWN &kp RIGHT &kp SLASH
+#define FUE_L2_THUMBS &kp ESC &kp DEL    &kp LANG2 &trans
+
+// --- Layer 3: Scroll ---
+#define FUE_L3_ROW1 &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4    &kp LC(LG(LEFT)) &kp LG(TAB) &mkp MB3 &trans &kp LG(LC(RIGHT))
+#define FUE_L3_ROW2 &studio_unlock &kp F13 &kp LS(COMMA) &kp LS(DOT) &trans    &mkp MB4 &mkp MB1 &kp UP &mkp MB2 &mkp MB5
+#define FUE_L3_ROW3 &trans &trans &trans &trans &trans    &trans &kp LEFT &kp DOWN &kp RIGHT &tog 4
+#define FUE_L3_THUMBS &trans &trans    &trans &trans
+
+// --- Layer 4: Mouse ---
+#define FUE_L4_ROW1 &trans &trans &trans &trans &trans    &trans &trans &mkp MB3 &trans &trans
+#define FUE_L4_ROW2 &trans &trans &trans &trans &trans    &trans &mkp MB1 &trans &mkp MB2 &trans
+#define FUE_L4_ROW3 &trans &trans &trans &trans &trans    &trans &trans &trans &trans &tog 4
+#define FUE_L4_THUMBS &trans &trans    &trans &trans
+
+#endif /* FUE_KEYMAP34_DTSI */
