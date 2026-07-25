@@ -143,9 +143,12 @@
 #define FUE_L1_THUMBS &trans &trans    &trans &trans
 
 // --- Layer 2: Number ---
-#define FUE_L2_ROW1 &kp TAB &kp N7 &kp N8 &kp N9 &kp MINUS    &kp RIGHT_BRACKET &trans &mkp MB3 &trans &kp ESC
-#define FUE_L2_ROW2 &kp DOT &kp N4 &kp N5 &kp N6 &kp JP_PLUS    &kp RPAR &mkp MB1 &kp UP &mkp MB2 &kp COLON
-#define FUE_L2_ROW3 &kp N0 &kp N1 &kp N2 &kp N3 &kp EQUAL    &kp RIGHT_BRACE &kp LEFT &kp DOWN &kp RIGHT &kp SLASH
+// 修正(2026-07-26): JIS非対応キーコードをJP_*定義に統一
+//   RIGHT_BRACKET→JP_RBRACKET / RPAR→JP_RPAREN / COLON→JP_COLON
+//   EQUAL→JP_EQUAL / RIGHT_BRACE→JP_RBRACE
+#define FUE_L2_ROW1 &kp TAB &kp N7 &kp N8 &kp N9 &kp MINUS    &kp JP_RBRACKET &trans &mkp MB3 &trans &kp ESC
+#define FUE_L2_ROW2 &kp DOT &kp N4 &kp N5 &kp N6 &kp JP_PLUS    &kp JP_RPAREN &mkp MB1 &kp UP &mkp MB2 &kp JP_COLON
+#define FUE_L2_ROW3 &kp N0 &kp N1 &kp N2 &kp N3 &kp JP_EQUAL    &kp JP_RBRACE &kp LEFT &kp DOWN &kp RIGHT &kp SLASH
 #define FUE_L2_THUMBS &kp ESC &kp DEL    &kp LANG2 &trans
 
 // --- Layer 3: Scroll ---
