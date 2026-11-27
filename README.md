@@ -7,8 +7,8 @@ jisaku_1(40キー)とaerogu34(34キー)で共有するZMKキーマップ定義�
 - `include/fue/keymap34.dtsi` に全レイヤーのキー割り当て・コンボ・JIS定義・ホールドタップ設定を集約
 - 各キーボードのリポジトリが `config/west.yml` でこのリポジトリをZephyrモジュールとして取り込み、
   各 `.keymap` は共通定義を自機のマトリクスへ展開するだけの薄いラッパー
-  - [zmk-config-jisaku1](https://github.com/bakajaan/zmk-config-jisaku1)（40キー: 最下段外側3キー×2は&none）
-  - [zmk-keyboard-aerogu34](https://github.com/bakajaan/zmk-keyboard-aerogu34)（34キー）
+  - [zmk-config-jisaku1](https://github.com/lionexile-cpu/zmk-config-jisaku1)（40キー: 最下段外側3キー×2は&none）
+  - [zmk-keyboard-aerogu34](https://github.com/lionexile-cpu/zmk-keyboard-aerogu34)（34キー）
 
 ## キーマップの変え方
 
