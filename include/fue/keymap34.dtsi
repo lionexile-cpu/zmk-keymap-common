@@ -123,12 +123,30 @@
             layers = <0>;
         };
 
-        stab {
-            bindings = <&kp LS(TAB)>;
+        // ----- 日本語入力の切替 (2026-11-27) -----
+        // D+F = IMEオフ(無変換) / J+K = IMEオン(変換)。今の状態に関係なく確実に切り替わる。
+        // ※ Windows の MS-IME 設定で「無変換キー: IME-オフ」「変換キー: IME-オン」にしておくこと。
+        // (旧 D+F=Shift+Tab は NumNavレイヤーの N に移動)
+        ime_off {
+            bindings = <&kp INT5>;
             key-positions = <12 13>;
+            layers = <0>;
         };
 
-        // ----- Scrollレイヤー限定のシステム操作(誤爆防止) -----
+        ime_on {
+            bindings = <&kp INT4>;
+            key-positions = <16 17>;
+            layers = <0>;
+        };
+
+        // Q+W = Esc (Excelの入力取消・ダイアログを閉じる等)
+        esc {
+            bindings = <&kp ESC>;
+            key-positions = <0 1>;
+            layers = <0>;
+        };
+
+        // ----- Functionレイヤー(3)限定のシステム操作(誤爆防止) -----
         // BT_CLR: Q+T / Bootloader: W+E+R / sys_reset: X+C+V / soft_off: U+I+O
         btreset {
             bindings = <&bt BT_CLR>;
@@ -178,6 +196,27 @@
 
 // ===== レイヤー定義マクロ =====
 // 各行10キー(左5+右5)、THUMBSは親指4キー(左2+右2)
+// 2026-11-27 全面見直し: Excel / スプレッドシート / Chrome / チャット中心の使い方に合わせた。
+//   1: Symbol   … 記号をすべて集約 (上段 = Shift+数字と同じ並び)
+//   2: NumNav   … 左手テンキー + 右手カーソル/ページ移動/タブ切替
+//   3: Function … F1〜F12・音量・BT切替・更新モード (ボールはスクロール)
+//   4: Mouse    … ボールを動かすと自動で入る。クリック・スクロール・精密モード
+
+// 精密モード(押している間ポインター速度0.5倍): runtime-input-processor がある機種のみ
+#if __has_include(<behaviors/runtime-input-processor.dtsi>)
+#include <behaviors/runtime-input-processor.dtsi>
+#define FUE_PRECISION_KEY &rip_ldpi
+#else
+#define FUE_PRECISION_KEY &trans
+#endif
+
+// 更新モードキー: Functionレイヤーの B(左) / N(右) で、押した側のハーフを
+// USBシリアル更新モード(&ser_dfu)で再起動する。zmk-feature-ota-dfu が無い構成では &trans。
+#if __has_include(<behaviors/ota_dfu.dtsi>)
+#define FUE_DFU_KEY &ser_dfu
+#else
+#define FUE_DFU_KEY &trans
+#endif
 
 // --- Layer 0: Default ---
 #define FUE_L0_ROW1 &kp Q &kp W &kp E &kp R &kp T    &kp Y &kp U &kp I &kp O &kp P
@@ -185,39 +224,43 @@
 #define FUE_L0_ROW3 &akmt LSHIFT Z &akmt LGUI X &akmt LALT C &kp V &kp B    &kp N &kp M &akmt RALT COMMA &akmt RGUI DOT &akmt RSHIFT SLASH
 #define FUE_L0_THUMBS &lt 1 SPACE &lt 3 GRAVE    &kp BACKSPACE &lt 2 ENTER
 
-// --- Layer 1: Function ---
-#define FUE_L1_ROW1 &kp F1 &kp F2 &kp F3 &kp F4 &kp F5    &kp F6 &kp F7 &kp F8 &kp F9 &kp F10
-#define FUE_L1_ROW2 &kp JP_COLON &kp EXCLAMATION &kp SLASH &kp JP_LPAREN &kp JP_LBRACKET    &kp JP_UNDERSCORE &mkp MB1 &kp UP &mkp MB2 &kp F11
-#define FUE_L1_ROW3 &kp SEMICOLON &kp QUESTION &kp JP_YEN &kp JP_RPAREN &kp JP_RBRACKET    &kp JP_AT &kp LEFT &kp DOWN &kp RIGHT &kp F12
+// --- Layer 1: Symbol ---
+//  !  "  #  $  %    &  '  (  )  ~
+//  =  +  -  *  /    ^  @  :  ;  ¥
+//  <  >  _  |  `    ?  [  ]  {  }
+#define FUE_L1_ROW1 &kp EXCLAMATION &kp JP_DQUOTE &kp HASH &kp DOLLAR &kp PERCENT    &kp JP_AMPERSAND &kp JP_QUOTE &kp JP_LPAREN &kp JP_RPAREN &kp JP_TILDE
+#define FUE_L1_ROW2 &kp JP_EQUAL &kp JP_PLUS &kp MINUS &kp JP_ASTERISK &kp SLASH    &kp JP_CARET &kp JP_AT &kp JP_COLON &kp SEMICOLON &kp JP_YEN
+#define FUE_L1_ROW3 &kp LS(COMMA) &kp LS(DOT) &kp JP_UNDERSCORE &kp JP_PIPE &kp JP_BACKQUOTE    &kp QUESTION &kp JP_LBRACKET &kp JP_RBRACKET &kp JP_LBRACE &kp JP_RBRACE
 #define FUE_L1_THUMBS &trans &trans    &trans &trans
 
-// --- Layer 2: Number ---
-// 修正(2026-07-26): JIS非対応キーコードをJP_*定義に統一
-//   RIGHT_BRACKET→JP_RBRACKET / RPAR→JP_RPAREN / COLON→JP_COLON
-//   EQUAL→JP_EQUAL / RIGHT_BRACE→JP_RBRACE
-#define FUE_L2_ROW1 &kp TAB &kp N7 &kp N8 &kp N9 &kp MINUS    &kp JP_RBRACKET &trans &mkp MB3 &trans &kp ESC
-#define FUE_L2_ROW2 &kp DOT &kp N4 &kp N5 &kp N6 &kp JP_PLUS    &kp JP_RPAREN &mkp MB1 &kp UP &mkp MB2 &kp JP_COLON
-#define FUE_L2_ROW3 &kp N0 &kp N1 &kp N2 &kp N3 &kp JP_EQUAL    &kp JP_RBRACE &kp LEFT &kp DOWN &kp RIGHT &kp SLASH
-#define FUE_L2_THUMBS &kp ESC &kp DEL    &kp LANG2 &trans
+// --- Layer 2: NumNav ---
+//  Tab 7 8 9 =     PgUp Home ↑    End  Del
+//  *   4 5 6 +     PgDn ←    ↓    →    F2
+//  /   1 2 3 -     S-Tab C-PgUp C-PgDn A-Enter S-Enter
+//  (親指) . 0
+// C-PgUp/C-PgDn = Excelのシート切替・Chromeのタブ切替
+// A-Enter = Excelのセル内改行 / S-Enter = チャットで送信せずに改行
+#define FUE_L2_ROW1 &kp TAB &kp N7 &kp N8 &kp N9 &kp JP_EQUAL    &kp PG_UP &kp HOME &kp UP &kp END &kp DEL
+#define FUE_L2_ROW2 &kp JP_ASTERISK &kp N4 &kp N5 &kp N6 &kp JP_PLUS    &kp PG_DN &kp LEFT &kp DOWN &kp RIGHT &kp F2
+#define FUE_L2_ROW3 &kp SLASH &kp N1 &kp N2 &kp N3 &kp MINUS    &kp LS(TAB) &kp LC(PG_UP) &kp LC(PG_DN) &kp LA(ENTER) &kp LS(ENTER)
+#define FUE_L2_THUMBS &kp DOT &kp N0    &trans &trans
 
-// --- Layer 3: Scroll ---
-#define FUE_L3_ROW1 &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4    &kp LC(LG(LEFT)) &kp LG(TAB) &mkp MB3 &trans &kp LG(LC(RIGHT))
-#define FUE_L3_ROW2 &studio_unlock &kp F13 &kp LS(COMMA) &kp LS(DOT) &trans    &mkp MB4 &mkp MB1 &kp UP &mkp MB2 &mkp MB5
-// 更新モードキー(2026-11-27): Scrollレイヤーの B(左) / N(右) で、押した側のハーフを
-// USBシリアル更新モード(&ser_dfu)で再起動する。DYA Studioの「ファームウェア更新」から
-// USBマスストレージを使わずに書き込める。zmk-feature-ota-dfu が無い構成では &trans。
-#if __has_include(<behaviors/ota_dfu.dtsi>)
-#define FUE_DFU_KEY &ser_dfu
-#else
-#define FUE_DFU_KEY &trans
-#endif
-#define FUE_L3_ROW3 &trans &trans &trans &trans FUE_DFU_KEY    FUE_DFU_KEY &kp LEFT &kp DOWN &kp RIGHT &tog 4
+// --- Layer 3: Function (ボール = スクロール) ---
+//  F1  F2  F3   F4   F5       F6   F7  F8  F9  F10
+//  F11 F12 Vol- Vol+ 切取り   戻る 左  中  右  進む   (マウスボタン)
+//  BT0 BT1 BT2  BT3  更新     更新 ←デスクトップ タスクビュー デスクトップ→ Studio解除
+#define FUE_L3_ROW1 &kp F1 &kp F2 &kp F3 &kp F4 &kp F5    &kp F6 &kp F7 &kp F8 &kp F9 &kp F10
+#define FUE_L3_ROW2 &kp F11 &kp F12 &kp C_VOL_DN &kp C_VOL_UP &kp LG(LS(S))    &mkp MB4 &mkp MB1 &mkp MB3 &mkp MB2 &mkp MB5
+#define FUE_L3_ROW3 &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 FUE_DFU_KEY    FUE_DFU_KEY &kp LC(LG(LEFT)) &kp LG(TAB) &kp LC(LG(RIGHT)) &studio_unlock
 #define FUE_L3_THUMBS &trans &trans    &trans &trans
 
-// --- Layer 4: Mouse ---
-#define FUE_L4_ROW1 &trans &trans &trans &trans &trans    &trans &trans &mkp MB3 &trans &trans
-#define FUE_L4_ROW2 &trans &trans &trans &trans &trans    &trans &mkp MB1 &trans &mkp MB2 &trans
-#define FUE_L4_ROW3 &trans &trans &trans &trans &trans    &trans &trans &trans &trans &tog 4
+// --- Layer 4: Mouse (ボールを動かすと自動で有効) ---
+// J=左クリック K=押している間スクロール L=右クリック -=押している間 精密(0.5倍)
+// Z=Shift X=Ctrl (Shift+クリックで範囲選択、Ctrl+クリックで複数選択、Ctrl+スクロールでズーム)
+// それ以外のキーは押した瞬間に通常入力へ戻る。
+#define FUE_L4_ROW1 &trans &trans &trans &trans &trans    &trans &trans &trans &trans &trans
+#define FUE_L4_ROW2 &trans &trans &trans &trans &trans    &trans &mkp MB1 &mo 3 &mkp MB2 FUE_PRECISION_KEY
+#define FUE_L4_ROW3 &kp LSHIFT &kp LCTRL &trans &trans &trans    &trans &trans &trans &trans &trans
 #define FUE_L4_THUMBS &trans &trans    &trans &trans
 
 #endif /* FUE_KEYMAP34_DTSI */
