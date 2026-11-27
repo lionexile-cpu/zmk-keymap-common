@@ -62,6 +62,41 @@
     quick-tap-ms = <150>;
     require-prior-idle-ms = <125>;
 };
+// ↑ &mt / &lt は親指キー用(素早いレイヤー切替のため balanced のまま)。
+
+// ===== 文字キー用ホールドタップ(2026-11-27) =====
+// 文字キー(D/K/A/Z…)に balanced を使うと、「K押下→U押して離す→K離す」の
+// ローリング(ローマ字の "ku" 等)が長押し判定になり、Win+Tab や BT切替が誤爆していた。
+// 文字キーは tap-preferred にして「単独で tapping-term 以上押し続けた時だけ」長押しにする。
+//   - 他キーを挟んでも長押しにならない → KU / DE / AT などのローリングで誤爆しない
+//   - Kを押したままトラックボールを回す → 200ms後にScrollレイヤー(従来どおり)
+//   - Ctrl+C 等は A を押したまま C → A を200ms以上保持すればCtrl+Cとして送出される
+// DYA Studio上では「Alpha Layer-Tap」「Alpha Mod-Tap」として選択できる。
+/ {
+    behaviors {
+        aklt: aklt {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <200>;
+            quick-tap-ms = <150>;
+            require-prior-idle-ms = <125>;
+            bindings = <&mo>, <&kp>;
+            display-name = "Alpha Layer-Tap";
+        };
+
+        akmt: akmt {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <200>;
+            quick-tap-ms = <150>;
+            require-prior-idle-ms = <125>;
+            bindings = <&kp>, <&kp>;
+            display-name = "Alpha Mod-Tap";
+        };
+    };
+};
 
 // ===== コンボ定義(両機共通: キー位置0〜29は同一) =====
 / {
@@ -132,8 +167,8 @@
 
 // --- Layer 0: Default ---
 #define FUE_L0_ROW1 &kp Q &kp W &kp E &kp R &kp T    &kp Y &kp U &kp I &kp O &kp P
-#define FUE_L0_ROW2 &mt LCTRL A &kp S &lt 3 D &kp F &kp G    &kp H &kp J &lt 3 K &kp L &mt RCTRL MINUS
-#define FUE_L0_ROW3 &mt LSHIFT Z &mt LGUI X &mt LALT C &kp V &kp B    &kp N &kp M &mt RALT COMMA &mt RGUI DOT &mt RSHIFT SLASH
+#define FUE_L0_ROW2 &akmt LCTRL A &kp S &aklt 3 D &kp F &kp G    &kp H &kp J &aklt 3 K &kp L &akmt RCTRL MINUS
+#define FUE_L0_ROW3 &akmt LSHIFT Z &akmt LGUI X &akmt LALT C &kp V &kp B    &kp N &kp M &akmt RALT COMMA &akmt RGUI DOT &akmt RSHIFT SLASH
 #define FUE_L0_THUMBS &lt 1 SPACE &lt 3 GRAVE    &kp BACKSPACE &lt 2 ENTER
 
 // --- Layer 1: Function ---
